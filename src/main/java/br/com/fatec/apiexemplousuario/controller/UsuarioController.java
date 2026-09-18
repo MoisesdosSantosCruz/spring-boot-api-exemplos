@@ -45,12 +45,17 @@ public class UsuarioController {
     @PutMapping("/{id}")
     public ResponseEntity<Usuario> atualizar(@PathVariable Integer id, @RequestBody Usuario usuario)
     {
+        return usuarioService.atualizar(id, usuario)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+        /*
         return usuarioService.buscarPorId(id).map(u -> {
             u.setNome(usuario.getNome());
             u.setIdade(usuario.getIdade());
             Usuario atualizado = usuarioService.salvar(u);
             return ResponseEntity.ok(atualizado);
         }).orElseGet(() -> ResponseEntity.notFound().build());
+        */
     }
 
     // DELETE - remover usuário
