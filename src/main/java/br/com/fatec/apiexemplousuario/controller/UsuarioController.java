@@ -2,16 +2,16 @@ package br.com.fatec.apiexemplousuario.controller;
 
 import br.com.fatec.apiexemplousuario.model.Usuario;
 import br.com.fatec.apiexemplousuario.service.UsuarioService;
-import jakarta.persistence.Id;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @RestController //Este é nosso controller (Usuários)
-@RequestMapping("/usuarios") //Mapeamento
+@RequestMapping("/api/usuarios") //Mapeamento
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
@@ -38,7 +38,7 @@ public class UsuarioController {
     @PostMapping
     public ResponseEntity<Usuario> salvar(@RequestBody Usuario usuario) {
         Usuario novoUsuario = usuarioService.salvar(usuario);
-        return ResponseEntity.ok(novoUsuario);
+        return ResponseEntity.status(201).body(novoUsuario);
     }
 
     // PUT - atualizar usuário
@@ -48,14 +48,6 @@ public class UsuarioController {
         return usuarioService.atualizar(id, usuario)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
-        /*
-        return usuarioService.buscarPorId(id).map(u -> {
-            u.setNome(usuario.getNome());
-            u.setIdade(usuario.getIdade());
-            Usuario atualizado = usuarioService.salvar(u);
-            return ResponseEntity.ok(atualizado);
-        }).orElseGet(() -> ResponseEntity.notFound().build());
-        */
     }
 
     // DELETE - remover usuário
@@ -68,9 +60,32 @@ public class UsuarioController {
         return ResponseEntity.notFound().build();
     }
 
+    //POST - importar arquivo
+    @PostMapping("/importar")
+    public ResponseEntity<String> importarArquivo(
+            @RequestParam("arquivo") MultipartFile arquivo) {
+        try {
+            int quantidade = usuarioService.importarArquivo(arquivo);
+            return ResponseEntity.ok(
+                    quantidade + " usuários importados com sucesso."
+            );
+        } catch (IllegalArgumentException erro) {
+            return ResponseEntity
+                    .badRequest()
+                    .body("Arquivo inválido: " + erro.getMessage());
+        }
+    }
+
 }
 
 /*
+        return usuarioService.buscarPorId(id).map(u -> {
+            u.setNome(usuario.getNome());
+            u.setIdade(usuario.getIdade());
+            Usuario atualizado = usuarioService.salvar(u);
+            return ResponseEntity.ok(atualizado);
+        }).orElseGet(() -> ResponseEntity.notFound().build());
+
     // GET - listar todos os usuários
     public ResponseEntity<List<Usuario>> listar() {
         return ResponseEntity.ok(usuarioService.listar());
